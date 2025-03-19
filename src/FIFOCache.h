@@ -61,6 +61,18 @@ public:
         return true;
 
     }
+    void deletenode(const Key& key){
+        std::lock_guard<std::mutex> lock(fifomutex_);
+
+        auto it = Cachemap_.find(key);
+        if(it == Cachemap_.end()){
+            return;
+        }
+
+        Cachelist_.erase(it->second);
+        Cachemap_.erase(it);
+
+    }
 
 private:
     /* data */
