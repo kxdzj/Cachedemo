@@ -70,15 +70,4 @@ private:
     std::mutex fifomutex_;
 };
 
-
-
-
-
-
-
-
-
-
-
-
 } // namespace CacheDemo
