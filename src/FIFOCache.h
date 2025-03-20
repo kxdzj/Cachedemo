@@ -40,7 +40,7 @@ public:
 
         if(Cachelist_.size() >= capacity_){
             auto tail = Cachelist_.back();
-            Cachemap_.erase(tail->first);
+            Cachemap_.erase(tail.first);
             Cachelist_.pop_back();
         }
 
