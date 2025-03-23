@@ -428,7 +428,7 @@ void testWorkloadShift() {
         const int PHASE_LENGTH = OPERATIONS / 5;
         
         CacheDemo::LRUCache<int, std::string> lru(CAPACITY);
-        CacheDemo::LFUCache<int, std::string> lfu(CAPACITY);
+        CacheDemo::LFUMCache<int, std::string> lfu(CAPACITY);
         CacheDemo::ArcCache<int, std::string> arc(CAPACITY);
     
         std::random_device rd;
