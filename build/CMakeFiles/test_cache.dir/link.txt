@@ -1,0 +1,1 @@
+/usr/bin/c++  -O2 -pthread   CMakeFiles/test_cache.dir/test/test_cache.cpp.o  -o test_cache 

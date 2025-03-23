@@ -1,0 +1,3 @@
+/home/dxhaizyp/Code/cpp/project/Cachedemo/build/CMakeFiles/rebuild_cache.dir
+/home/dxhaizyp/Code/cpp/project/Cachedemo/build/CMakeFiles/edit_cache.dir
+/home/dxhaizyp/Code/cpp/project/Cachedemo/build/CMakeFiles/test_cache.dir
