@@ -1,6 +1,8 @@
 #pragma once
 
+#include<cmath>
 #include<list>
+#include<vector>
 #include<memory>
 #include<thread>
 #include<unordered_map>
@@ -169,7 +171,7 @@ public:
     size_t sliceSize = std::ceil(capacity / static_cast<double>(sliceNum_)); 
         for (int i = 0; i < sliceNum_; ++i)
         {
-            lruSliceCaches_.emplace_back(new LRUCache<Key, Value>(sliceSize)); 
+            lruSliceCaches_.emplace_back(std::make_unique<LRUCache<Key, Value> >(sliceSize)); 
         }
    }
 
@@ -189,8 +191,7 @@ public:
 
    Value get(const Key& key)
    {
-       Value value;
-       memset(&value, 0, sizeof(value));
+       Value value{};
        get(key, value);
        return value;
    }
