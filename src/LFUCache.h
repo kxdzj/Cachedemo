@@ -195,7 +195,7 @@ private:
         
         // 确保访问的 list 非空
         Listtype& list = freq_map_[min_freq_];
-        if (list.empty()) return;  // 检查 list 是否为空
+        // if (list.empty()) return;  // 检查 list 是否为空
     
         LRUNode<Key, Value> evict_node = list.back();
     
@@ -258,6 +258,10 @@ private:
 
         put_count_ = 0;
         
+         // 更新 min_freq_，确保它指向有效的最小频率
+    if (!freq_map_.empty()) {
+        min_freq_ = freq_map_.begin()->first;  // 获取 freq_map 中的最小频率
+    }
     }
 };
 
