@@ -27,8 +27,6 @@ mutex
 -
 Cachepolicy.h
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/Cachepolicy.h
-../src/ARCCache.tpp
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/ARCCache.tpp
 
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/Cachepolicy.h
 
@@ -43,8 +41,6 @@ mutex
 -
 Cachepolicy.h
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/Cachepolicy.h
-../src/FIFOCache.tpp
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/FIFOCache.tpp
 
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/LFUCache.h
 list
@@ -63,8 +59,6 @@ mutex
 -
 Cachepolicy.h
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/Cachepolicy.h
-../src/LFUCache.tpp
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/LFUCache.tpp
 
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/LRUCache.h
 cmath
@@ -83,24 +77,6 @@ mutex
 -
 Cachepolicy.h
 /home/dxhaizyp/Code/cpp/project/Cachedemo/include/Cachepolicy.h
-../src/LRUCache.tpp
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/LRUCache.tpp
-
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/ARCCache.tpp
-../include/ARCCache.h
-/home/dxhaizyp/Code/cpp/project/Cachedemo/include/ARCCache.h
-
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/FIFOCache.tpp
-../include/FIFOCache.h
-/home/dxhaizyp/Code/cpp/project/Cachedemo/include/FIFOCache.h
-
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/LFUCache.tpp
-../include/LFUCache.h
-/home/dxhaizyp/Code/cpp/project/Cachedemo/include/LFUCache.h
-
-/home/dxhaizyp/Code/cpp/project/Cachedemo/src/LRUCache.tpp
-../include/LRUCache.h
-/home/dxhaizyp/Code/cpp/project/Cachedemo/include/LRUCache.h
 
 /home/dxhaizyp/Code/cpp/project/Cachedemo/test/test_cache.cpp
 iostream

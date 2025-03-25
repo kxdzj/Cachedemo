@@ -7,10 +7,10 @@
 #include <random>
 #include <algorithm>
 
-#include "../src/FIFOCache.h"
-#include "../src/LRUCache.h"
-#include "../src/LFUCache.h"
-#include "../src/ARCCache.h"
+#include "../include/FIFOCache.h"
+#include "../include/LRUCache.h"
+#include "../include/LFUCache.h"
+#include "../include/ARCCache.h"
 
 using namespace CacheDemo;
 

@@ -123,6 +123,19 @@ test_cache/fast:
 	$(MAKE) -f CMakeFiles/test_cache.dir/build.make CMakeFiles/test_cache.dir/build
 .PHONY : test_cache/fast
 
+#=============================================================================
+# Target rules for targets named cache_lib
+
+# Build rule for target.
+cache_lib: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 cache_lib
+.PHONY : cache_lib
+
+# fast build rule for target.
+cache_lib/fast:
+	$(MAKE) -f CMakeFiles/cache_lib.dir/build.make CMakeFiles/cache_lib.dir/build
+.PHONY : cache_lib/fast
+
 test/test_cache.o: test/test_cache.cpp.o
 
 .PHONY : test/test_cache.o
@@ -159,6 +172,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test_cache"
+	@echo "... cache_lib"
 	@echo "... test/test_cache.o"
 	@echo "... test/test_cache.i"
 	@echo "... test/test_cache.s"

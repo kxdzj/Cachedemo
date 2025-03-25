@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcache_lib.a  
+/usr/bin/ranlib libcache_lib.a

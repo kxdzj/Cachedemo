@@ -1,32 +1,19 @@
-#pragma once
-
-#include<list>
-#include<memory>
-#include<unordered_map>
-#include<mutex>
-#include"Cachepolicy.h"
+#include"../include/FIFOCache.h"
 
 namespace CacheDemo
 {
-
+    
 template<typename Key, typename Value>
-class FIFOCache : public Cachepolicy<Key, Value>
-{
-
-public:
-    using Nodetype = std::pair<Key,Value>; 
-    using Listtype = std::list<Nodetype>;
-    using ListIterator = typename Listtype::iterator;
-    using Hashmap = std::unordered_map<Key, ListIterator>;
-
-    explicit  FIFOCache(size_t cap):capacity_(cap) 
+FIFOCache<Key, Value>::FIFOCache(size_t cap):capacity_(cap) 
     {
         Cachemap_.reserve(cap); 
     }
 
-    ~FIFOCache() override = default;
+template<typename Key, typename Value>   
+FIFOCache<Key, Value>::~FIFOCache() = default;
 
-    void put(const Key& key, const Value& value) override
+template<typename Key, typename Value>
+void FIFOCache<Key, Value>::put(const Key& key, const Value& value) 
     {
         if(capacity_ == 0) return;
 
@@ -48,7 +35,8 @@ public:
         Cachemap_[key] = Cachelist_.begin();
     }
 
-    bool get(const Key& key, Value& value) override
+template<typename Key, typename Value>
+bool FIFOCache<Key, Value>::get(const Key& key, Value& value) 
     {
         std::lock_guard<std::mutex> lock(fifomutex_);
 
@@ -61,7 +49,9 @@ public:
         return true;
 
     }
-    void deletenode(const Key& key){
+
+template<typename Key, typename Value>
+void FIFOCache<Key, Value>::deletenode(const Key& key){
         std::lock_guard<std::mutex> lock(fifomutex_);
 
         auto it = Cachemap_.find(key);
@@ -73,13 +63,5 @@ public:
         Cachemap_.erase(it);
 
     }
-
-private:
-    /* data */
-    size_t capacity_;
-    Listtype Cachelist_;
-    Hashmap Cachemap_;
-    std::mutex fifomutex_;
-};
 
 } // namespace CacheDemo

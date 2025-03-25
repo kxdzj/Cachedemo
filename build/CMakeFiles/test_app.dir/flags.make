@@ -6,5 +6,5 @@ CXX_FLAGS =   -std=gnu++17
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/dxhaizyp/Code/cpp/project/Cachedemo/include 
+CXX_INCLUDES = -I/home/dxhaizyp/Code/cpp/project/Cachedemo/include -I/home/dxhaizyp/Code/cpp/project/Cachedemo/src 
 

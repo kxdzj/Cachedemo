@@ -1,39 +1,15 @@
-#pragma once
-
-#include <list>
-#include <cmath>
-#include <vector>
-#include <memory>
-#include <thread>
-#include <unordered_map>
-#include <mutex>
-#include "Cachepolicy.h"
+#include "../include/LFUCache.h"
 
 namespace CacheDemo {
 
-// 限制的最大频次
-constexpr int MAX_FREQ = 16;
-
+template <typename Key, typename Value>
+LFUCache<Key, Value>::LFUCache(size_t cap) : capacity_(cap), min_freq_(0) {}
 
 template <typename Key, typename Value>
-class LFUCache : public Cachepolicy<Key, Value> {
-public:
+LFUCache<Key, Value>::~LFUCache()  = default;
 
-    // 用于存储相同访问频次的键的双向链表
-    using Listtype = std::list<Key>;
-    // 存储缓存的键值对，同时记录访问频次
-    using Hashmap = std::unordered_map<Key, std::pair<Value, int>>; 
-    // 频次字段映射到对应双向链表，方便o1找到最少使用
-    using Freqmap = std::unordered_map<int, Listtype>; 
-    using ListIterator = typename Listtype::iterator;
-    // 方便o1删除，因为可以直接拿到迭代器
-    using Itermap = std::unordered_map<Key, ListIterator>; 
-
-    explicit LFUCache(size_t cap) : capacity_(cap), min_freq_(0) {}
-
-    ~LFUCache() override = default;
-
-    void put(const Key& key, const Value& value) override {
+template <typename Key, typename Value>
+void  LFUCache<Key, Value>::put(const Key& key, const Value& value)  {
         if (capacity_ == 0) return;
         
         std::lock_guard<std::mutex> lock(LFUmutex_);
@@ -62,7 +38,8 @@ public:
         iter_map_[key] = freq_map_[1].begin();
     }
 
-    bool get(const Key& key, Value& value) override {
+template<typename Key, typename Value>
+bool LFUCache<Key, Value>::get(const Key& key, Value& value)  {
         std::lock_guard<std::mutex> lock(LFUmutex_);
 
         if (!cache_.count(key)) return false;
@@ -75,7 +52,8 @@ public:
         return true;
     }
 
-    void deletenode(const Key& key) {
+template <typename Key, typename Value>
+void LFUCache<Key, Value>::deletenode(const Key& key) {
         std::lock_guard<std::mutex> lock(LFUmutex_);
 
         if (!cache_.count(key)) return;
@@ -92,20 +70,9 @@ public:
         iter_map_.erase(key);
     }
 
-private:
-    size_t capacity_;
-    int min_freq_; 
-    // key->(value,freq)
-    Hashmap cache_; 
-    // freq->list
-    Freqmap freq_map_; 
-    // key->(list::iterator)
-    Itermap iter_map_; 
 
-    std::mutex LFUmutex_;
-
-private:
-void increase_frequency(const Key& key) {
+template <typename Key, typename Value>
+void LFUCache<Key, Value>::increase_frequency(const Key& key) {
     int freq = cache_[key].second;
     // 从当前频率列表中移除key
     freq_map_[freq].erase(iter_map_[key]);
@@ -120,34 +87,18 @@ void increase_frequency(const Key& key) {
     freq_map_[freq].push_front(key);
     iter_map_[key] = freq_map_[freq].begin();
 }
-};
 
-// Node
+
 template<typename Key, typename Value>
-struct LRUNode {
-  Key key;
-  Value value;
-  size_t freq;
-  
-  LRUNode(Key k, Value v, size_t f = 1)
-      : key(k), value(v), freq(f) {}
-};
-
-template <typename Key, typename Value>
-class LFUMCache : public Cachepolicy<Key, Value> {
-public:
-
-    using Listtype = std::list<LRUNode<Key, Value>>;
-    using ListIterator = typename Listtype::iterator;
-    using Freqmap = std::unordered_map<size_t, Listtype>;
-    using Cachemap = std::unordered_map<Key, ListIterator>;
-
-    explicit LFUMCache(size_t cap, int max_freq = MAX_FREQ)
+LFUMCache<Key, Value>::LFUMCache(size_t cap, int max_freq)
         : capacity_(cap), max_freq_(max_freq), min_freq_(0), put_count_(0) {}
 
-    ~LFUMCache() override = default;
+template<typename Key, typename Value>
+LFUMCache<Key, Value>::~LFUMCache()  = default;
 
-    void put(const Key& key, const Value& value) override {
+
+template<typename Key, typename Value>
+void  LFUMCache<Key, Value>::put(const Key& key, const Value& value)  {
         if (capacity_ == 0) return;
         std::lock_guard<std::mutex> lock(LFUmutex_);
 
@@ -170,7 +121,8 @@ public:
         
     }
 
-    bool get(const Key& key, Value& value) override {
+template<typename Key, typename Value>
+bool LFUMCache<Key, Value>::get(const Key& key, Value& value)  {
         
         std::lock_guard<std::mutex> lock(LFUmutex_);
         if (!cache_.count(key)) return false;
@@ -180,45 +132,30 @@ public:
         return true;
     }
 
-private:
-    size_t capacity_;
-    int max_freq_;
-    int min_freq_;
-    Cachemap cache_;  //  key->list<node>iterator
-    Freqmap freq_map_; // freq->list<node>
-    std::mutex LFUmutex_;
-    size_t put_count_;
-
-private:
-    void evictLFU() {
-        if (freq_map_.empty()) return;
-        
+template<typename Key, typename Value>
+void LFUMCache<Key, Value>::evictLFU() {
+        if (freq_map_.empty()) return;        
         // 确保访问的 list 非空
         Listtype& list = freq_map_[min_freq_];
-        // if (list.empty()) return;  // 检查 list 是否为空
-    
-        LRUNode<Key, Value> evict_node = list.back();
-    
+        // if (list.empty()) return;  // 检查 list 是否为空    
+        LRUNode<Key, Value> evict_node = list.back();    
         // 删除缓存项
-        cache_.erase(evict_node.key);
-    
+        cache_.erase(evict_node.key);    
         // 调试输出
-        // std::cout << "Evicting key: " << evict_node.key << std::endl;
-    
+        // std::cout << "Evicting key: " << evict_node.key << std::endl;    
         // 弹出尾部元素
-        list.pop_back();
-    
+        list.pop_back();    
         // 如果 list 为空，清除 freq_map 中的对应频率
         if (list.empty()) {
             freq_map_.erase(min_freq_);
-        }
-    
+        }    
         // 打印调试信息
         // std::cout << "Eviction complete, current cache size: " << cache_.size() << std::endl;
     }
     
 
-    void increase_frequency(const Key& key) {
+template<typename Key, typename Value>
+void LFUMCache<Key, Value>::increase_frequency(const Key& key) {
         ListIterator node_it = cache_[key];
         
         size_t freq = node_it->freq;
@@ -237,13 +174,12 @@ private:
         cache_[key] = freq_map_[new_freq].begin();
     }
     
-    void freqDecay() {
+    
+template<typename Key, typename Value>   
+void LFUMCache<Key, Value>::freqDecay() {
         if (freq_map_.empty()) return;
-    
         if (put_count_ < capacity_ ) return;
-    
-        Freqmap new_freq_map;
-    
+        Freqmap new_freq_map; 
         // 频率衰减：将每个频率减半
         for (auto& [freq, nodes] : freq_map_) {
             int new_freq = std::max(1, static_cast<int>(freq) / 2);
@@ -255,7 +191,6 @@ private:
         for (auto& [key, it] : cache_) {
             it->freq = std::max(1, static_cast<int>(it->freq) / 2);
         }
-
         put_count_ = 0;
         
          // 更新 min_freq_，确保它指向有效的最小频率
@@ -263,27 +198,15 @@ private:
         min_freq_ = freq_map_.begin()->first;  // 获取 freq_map 中的最小频率
     }
     }
-};
+
+
+
+
+
+
 
 template<typename Key, typename Value>
-class HashLFUCache
-{
-private:
-   // 将key转换为对应hash值
-   size_t Hash(Key key)
-   {
-       std::hash<Key> hashFunc;
-       return hashFunc(key);
-   }
-
-private:
-    size_t    capacity_;  // 总容量
-    int       sliceNum_;  // 切片数量
-    std::vector<std::unique_ptr<LFUMCache<Key, Value>>> lfuSliceCaches_;
-
-public:
-
-   HashLFUCache(size_t capacity, int sliceNum):
+HashLFUCache<Key, Value>::HashLFUCache(size_t capacity, int sliceNum):
    capacity_(capacity),
    sliceNum_(sliceNum > 0 ? sliceNum : std::thread::hardware_concurrency())
    {
@@ -294,38 +217,38 @@ public:
         }
    }
 
-
-   void put(const Key& key, const Value& value)
+template<typename Key, typename Value>
+void HashLFUCache<Key, Value>::put(const Key& key, const Value& value)
    {
        // 获取key的hash值，并计算出对应的分片索引
        size_t sliceIndex = Hash(key) % sliceNum_;
        lfuSliceCaches_[sliceIndex]->put(key, value);
    }
 
-   bool get(const Key& key, Value& value)
+template<typename Key, typename Value>
+bool HashLFUCache<Key, Value>::get(const Key& key, Value& value)
    {
        // 获取key的hash值，并计算出对应的分片索引
        size_t sliceIndex = Hash(key) % sliceNum_;
        return lfuSliceCaches_[sliceIndex]->get(key, value);
    }
 
-   Value get(const Key& key)
-   {
+template<typename Key, typename Value>
+Value HashLFUCache<Key, Value>::get(const Key& key)
+{
        Value value{};
        get(key, value);
        return value;
-   }
+}
 
     // 清除缓存
-    void purge()
+template<typename Key, typename Value>
+void HashLFUCache<Key, Value>::purge()
     {
         for (auto& lfuSliceCache : lfuSliceCaches_)
         {
             lfuSliceCache->purge();
         }
     }
-
-};// class HashLFUCache
-
 
 }  // namespace CacheDemo

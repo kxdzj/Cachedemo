@@ -215,6 +215,15 @@ CacheSystem_BINARY_DIR:STATIC=/home/dxhaizyp/Code/cpp/project/Cachedemo/build
 //Value Computed by CMake
 CacheSystem_SOURCE_DIR:STATIC=/home/dxhaizyp/Code/cpp/project/Cachedemo
 
+//Value Computed by CMake
+MyProject_BINARY_DIR:STATIC=/home/dxhaizyp/Code/cpp/project/Cachedemo/build
+
+//Value Computed by CMake
+MyProject_SOURCE_DIR:STATIC=/home/dxhaizyp/Code/cpp/project/Cachedemo
+
+//Dependencies for the target
+cache_lib_LIB_DEPENDS:STATIC=general;pthread;
+
 
 ########################
 # INTERNAL cache entries

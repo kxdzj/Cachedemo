@@ -1,44 +1,18 @@
-#pragma once
+#include "../include/ARCCache.h"
 
-#include <cmath>
-#include <list>
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <thread>
-#include <unordered_set>
-#include <unordered_map>
-#include <mutex>
-#include "Cachepolicy.h"
-using namespace std;
+
 namespace CacheDemo {
 
-// Node
-template<typename Key, typename Value>
-struct Node {
-  Key key;
-  Value value;
-  size_t freq;
-  typename std::list<Node>::iterator listIt;  // 记录该节点在链表中的位置
-
-  Node(Key k, Value v, size_t f = 1)
-      : key(k), value(v), freq(f) {}
-};
 
 // ArcLruPart
 template<typename Key, typename Value>
-class ArcLruPart {
-public:
-    using ListType = std::list<Node<Key, Value>>;  // 使用 Node<Key, Value>
-    using ListIterator = typename ListType::iterator;
-    using Hashmap = std::unordered_map<Key, ListIterator>;  // {key, ListIterator}
-
-    explicit ArcLruPart(size_t capacity, size_t transformThreshold)
+ArcLruPart<Key, Value>::ArcLruPart(size_t capacity, size_t transformThreshold)
         : capacity_(capacity), transformThreshold_(transformThreshold) {
         cacheMap_.reserve(capacity);
     }
 
-    bool put(Key key, Value value) {
+template<typename Key, typename Value>
+bool ArcLruPart<Key, Value>::put(Key key, Value value) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto it = cacheMap_.find(key);
         if (it != cacheMap_.end()) {
@@ -59,7 +33,8 @@ public:
         return true;
     }
 
-    bool get(Key key, Value& value, bool& shouldTransform) {
+template<typename Key, typename Value>
+bool ArcLruPart<Key, Value>::get(Key key, Value& value, bool& shouldTransform) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto it = cacheMap_.find(key);
         if (it == cacheMap_.end()) {
@@ -77,17 +52,20 @@ public:
         return true;
     }
 
-    bool checkGhost(Key key) {
+template<typename Key, typename Value>
+bool ArcLruPart<Key, Value>::checkGhost(Key key) {
         std::lock_guard<std::mutex> lock(mutex_);
         return ghostCache_.find(key) != ghostCache_.end();
     }
 
-    void increaseCapacity() {
+template<typename Key, typename Value>
+void ArcLruPart<Key, Value>::increaseCapacity() {
         std::lock_guard<std::mutex> lock(mutex_);
         capacity_++;
     }
 
-    bool decreaseCapacity() {
+template<typename Key, typename Value>
+bool ArcLruPart<Key, Value>::decreaseCapacity() {
         std::lock_guard<std::mutex> lock(mutex_);
         if (capacity_ > 1) {
             capacity_--;
@@ -96,12 +74,13 @@ public:
         return false;
     }
 
-private:
-    void moveToFront(ListIterator nodeIt) {
+template<typename Key, typename Value>
+void ArcLruPart<Key, Value>::moveToFront(ListIterator nodeIt) {
         cacheList_.splice(cacheList_.begin(), cacheList_, nodeIt);
     }
 
-    void evict() {
+template<typename Key, typename Value>    
+void ArcLruPart<Key, Value>::evict() {
         if (cacheList_.empty()) return;
 
         auto last = --cacheList_.end();
@@ -110,28 +89,16 @@ private:
         cacheList_.erase(last);
     }
 
-private:
-    size_t capacity_;
-    size_t transformThreshold_;
-    ListType cacheList_;   // 维护 LRU 访问顺序{list<node>}
-    Hashmap cacheMap_;  // {key, list<node>->iterator}
-    std::unordered_set<Key> ghostCache_;  // 存储淘汰的 key
-    std::mutex mutex_;  // 用于加锁
-};
+
 
 // ArcLfuPart
 template<typename Key, typename Value>
-class ArcLfuPart {
-public:
-    using ListType = std::list<Node<Key, Value>>;  // 使用 Node<Key, Value>
-    using ListIterator = typename ListType::iterator;
-    using Hashmap = std::unordered_map<Key, ListIterator>;  // {key, Node iterator}
-    using FreqMap = std::unordered_map<size_t, ListType>;  // freq -> ListType
-    
-    explicit ArcLfuPart(size_t capacity, size_t transformThreshold)
+ArcLfuPart<Key, Value>:: ArcLfuPart(size_t capacity, size_t transformThreshold)
         : capacity_(capacity), transformThreshold_(transformThreshold), minFreq_(1) {}
 
-    bool put(Key key, Value value) {
+
+template<typename Key, typename Value>
+bool ArcLfuPart<Key, Value>:: put(Key key, Value value) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto it = cacheMap_.find(key);
         if (it != cacheMap_.end()) {
@@ -153,7 +120,8 @@ public:
         return true;
     }
 
-    bool get(Key key, Value& value) {
+template<typename Key, typename Value>
+bool ArcLfuPart<Key, Value>:: get(Key key, Value& value) {
         std::lock_guard<std::mutex> lock(mutex_);
         auto it = cacheMap_.find(key);
         if (it == cacheMap_.end()) {
@@ -166,17 +134,20 @@ public:
         return true;
     }
 
-    bool checkGhost(Key key) {
+template<typename Key, typename Value>
+bool ArcLfuPart<Key, Value>:: checkGhost(Key key) {
         std::lock_guard<std::mutex> lock(mutex_);
         return ghostCache_.find(key) != ghostCache_.end();
-    }
+}
 
-    void increaseCapacity() {
+template<typename Key, typename Value>
+void ArcLfuPart<Key, Value>:: increaseCapacity() {
         std::lock_guard<std::mutex> lock(mutex_);
         capacity_++;
-    }
+}
 
-    bool decreaseCapacity() {
+template<typename Key, typename Value>
+bool ArcLfuPart<Key, Value>::decreaseCapacity() {
         std::lock_guard<std::mutex> lock(mutex_);
         if (capacity_ > 1) {
             capacity_--;
@@ -185,8 +156,8 @@ public:
         return false;
     }
 
-private:
-    void increaseFreq(ListIterator nodeIt) {
+template<typename Key, typename Value>
+void ArcLfuPart<Key, Value>::increaseFreq(ListIterator nodeIt) {
         size_t oldFreq = nodeIt->freq;
         size_t newFreq = oldFreq + 1;
 
@@ -209,7 +180,8 @@ private:
         }
     }
 
-    void evict() {
+template<typename Key, typename Value>
+void ArcLfuPart<Key, Value>:: evict() {
         if (freqMap_.empty()) return;
 
         // 淘汰最低频率的节点
@@ -229,32 +201,23 @@ private:
                 minFreq_ = 1;  // 如果 freqMap_ 为空，重置 minFreq_
             }
         }
-    }
+}
 
-private:
-    size_t capacity_;
-    size_t transformThreshold_;
-    size_t minFreq_;  // 记录当前最低频率
-    FreqMap freqMap_;  // 存储频率到节点链表的映射
-    Hashmap cacheMap_; // 存储 key 到节点迭代器的映射
-    std::unordered_set<Key> ghostCache_;  // 存储被淘汰的 key
-    std::mutex mutex_;  // 用于加锁
-};
 
 
 // ArcCache
 template<typename Key, typename Value>
-class ArcCache : public Cachepolicy<Key, Value> {
-public:
-    explicit ArcCache(size_t capacity, size_t transformThreshold = 2)
+ArcCache<Key, Value>:: ArcCache(size_t capacity, size_t transformThreshold)
         : capacity_(capacity), transformThreshold_(transformThreshold),
         lruPart_(std::make_unique<ArcLruPart<Key, Value>>(capacity, transformThreshold)),
         lfuPart_(std::make_unique<ArcLfuPart<Key, Value>>(capacity, transformThreshold))
     {}
 
-    ~ArcCache() override = default;
+template<typename Key, typename Value>
+ArcCache<Key, Value>:: ~ArcCache()  = default;
 
-    void put(const Key& key, const Value& value) override {
+template<typename Key, typename Value>
+void ArcCache<Key, Value>:: put(const Key& key, const Value& value)  {
         bool inGhost = checkGhostCaches(key);
  
         if (!inGhost) {
@@ -267,7 +230,8 @@ public:
        
     }
 
-    bool get(const Key& key, Value& value) override {
+template<typename Key, typename Value>
+bool ArcCache<Key, Value>:: get(const Key& key, Value& value)  {
         checkGhostCaches(key);
       
         bool shouldTransform = false;
@@ -281,14 +245,15 @@ public:
         return lfuPart_->get(key, value);
     }
 
-    Value get(Key key)  {
+template<typename Key, typename Value>
+Value ArcCache<Key, Value>:: get(Key key)  {
         Value value{};
         get(key, value);
         return value;
-    }
+}
 
-private:
-    bool checkGhostCaches(Key key) {
+template<typename Key, typename Value>
+bool ArcCache<Key, Value>:: checkGhostCaches(Key key) {
         bool inGhost = false;
         if (lruPart_->checkGhost(key)) {
             if (lfuPart_->decreaseCapacity()) {
@@ -304,12 +269,5 @@ private:
         }
         return inGhost;
     }
-
-private:
-    size_t capacity_;
-    size_t transformThreshold_;
-    std::unique_ptr<ArcLruPart<Key, Value>> lruPart_;
-    std::unique_ptr<ArcLfuPart<Key, Value>> lfuPart_;
-};
 
 } // namespace CacheDemo
